@@ -1,11 +1,8 @@
 import threading
-from flask import Flask, render_template, request
-from flask_cors import CORS
+from app import app
+from flask import render_template, request
 
 import sirius_orbit_monitor as som
-
-app = Flask(__name__)
-CORS(app)
 
 # Returns the list of signature with the information
 # about the correlation with the COD Rebuilt
@@ -37,7 +34,7 @@ def signOrbit():
     for name in data:
 
         if name == 'cod_rebuilt':
-            cod_rebuilt = calc_cod_rebuilt(
+            cod_rebuilt = som.calc_cod_rebuilt(
                 request.args.get("start"), request.args.get("stop"))
 
             sign_orbit['cod_rebuilt'] = [
@@ -55,6 +52,7 @@ def signOrbit():
 # Operation done with server initialization
 def run_job():
     print("Initializing!")
+    som.initialization()
     # app.SIGNATURES = calc_signatures.calc_sign()
 
 
@@ -72,6 +70,5 @@ def home():
 
 
 if __name__ == "__main__":
-    som.initialization()
-    app.SIGNATURES = {}
-    app.run(debug=True)
+    # app.SIGNATURES = {}
+    app.run(debug=False)
