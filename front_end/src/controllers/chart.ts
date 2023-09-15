@@ -1,8 +1,7 @@
 import control from "./Chart";
 import { colors } from "../assets/style/themes";
 import { getSectionAndName } from "./bpm";
-import { DatasetInterface, DatePointInterface, DictString } from "../assets/interfaces/patterns";
-import { ArchiverDataPoint } from "../assets/interfaces/data_access";
+import { DatasetInterface, DictString } from "../assets/interfaces/patterns";
 import { bpmGroups } from "../assets/constants/patterns";
 
 // Generate a random color
@@ -19,7 +18,7 @@ function getRandomColor(): string {
 function getBPMColor(section: number, name: string, yAxis: boolean): string {
   let hex: string = (12.7*section).toString(16).toUpperCase();
   let hex2: string = (30*bpmGroups.bpmName.indexOf(name)).toString(16).toUpperCase();
-  if(section==1){
+  if(section===1){
     hex = '0C'
   }
   let min_var: string = hex.substring(1,2);
@@ -34,8 +33,8 @@ function getBPMColor(section: number, name: string, yAxis: boolean): string {
 // Get axis color, or create it if it doesn't exist
 function getColor(name: string): string {
     const axisColors: DictString = control.getAxisColors();
-    if(!(name in axisColors) && name != undefined){
-      if (name == 'cod_rebuilt'){
+    if(!(name in axisColors) && name !== undefined){
+      if (name === 'cod_rebuilt'){
         axisColors[name] = colors.chart.cod_rebuilt
       }else if(name.includes('BPM')){
         const [section, bpm_name] = getSectionAndName(name);
@@ -56,19 +55,8 @@ function setAxisColor(name: string, state: DatasetInterface): DatasetInterface{
     return state;
 }
 
-// Build a list of data points from a list from Archiver
-function buildDataset(dataList: ArchiverDataPoint[]): DatePointInterface[]{
-  return dataList.map((data: ArchiverDataPoint) => {
-    return {
-      x: data.x,
-      y: data.y
-    };
-  });
-}
-
 export {
   getRandomColor,
   getColor,
-  setAxisColor,
-  buildDataset
+  setAxisColor
 }

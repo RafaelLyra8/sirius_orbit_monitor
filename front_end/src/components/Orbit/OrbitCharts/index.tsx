@@ -19,14 +19,15 @@ import * as S from './styled';
 
 function mapStateToProps(state: StoreInterface){
   const {start_date, end_date, change_time} = state.time;
-  const {change_orbit, signatures} = state.orbit;
+  const {change_cod_orbit, change_orbit, signatures} = state.orbit;
 
   return {
     start: new Date(start_date),
     end: new Date(end_date),
     sign_list: JSON.parse(signatures),
     changeTime: change_time,
-    changeOrbit: change_orbit
+    changeOrbit: change_orbit,
+    changeCodOrbit: change_cod_orbit
   }
 }
 
@@ -35,7 +36,8 @@ const defaultProps: ChartOrbitInterface = {
   end: new Date(),
   sign_list: {},
   changeTime: false,
-  changeOrbit: false
+  changeOrbit: false,
+  changeCodOrbit: false
 }
 
 const OrbitCharts: React.FC<ChartOrbitInterface> = (props) => {
@@ -46,18 +48,19 @@ const OrbitCharts: React.FC<ChartOrbitInterface> = (props) => {
 
   // Detect change on time or selected signatures
   useEffect(() => {
-    if(props.changeOrbit || props.changeTime){
+    if(props.changeCodOrbit || props.changeOrbit || props.changeTime){
       updateChartOrbit();
     }
-  }, [props.changeOrbit, props.changeTime])
+  }, [props.changeCodOrbit, props.changeOrbit, props.changeTime])
 
   // Update CODX and CODY Chart
   async function updateChartOrbit(): Promise<void>{
     if(chartRef[0].current && chartRef[1].current){
       const chartX: null|Chart = chartRef[0].current.chart;
       const chartY: null|Chart = chartRef[1].current.chart;
-      if(chartX != null && chartY != null){
+      if(chartX !== null && chartY !== null){
         const datasetList: Array<DatasetList> = await buildChartOrbit();
+
         control.setLabels(bpm_labels)
         await control.buildChartDatasets(
           chartX, datasetList[0], optionsOrbit, 'X');
@@ -87,32 +90,34 @@ const OrbitCharts: React.FC<ChartOrbitInterface> = (props) => {
   function dictToList(sign_list: BaseStrArrayDict): [Array<DatasetInterface[]>,Array<Array<string>>]{
     let signatures: Array<Array<string>> = [];
     let datasets: Array<DatasetInterface[]> = [];
-
-    let datasetX: DatasetInterface|null = control.detectNewData(
-      'cod_rebuilt', props.changeTime, 'X');
-    let datasetY: DatasetInterface|null = control.detectNewData(
-      'cod_rebuilt', props.changeTime, 'Y');
-    if(datasetX == null || datasetY == null ||
-        datasetX == undefined || datasetY == undefined){
-      signatures.push(['cod_rebuilt']);
-    }else{
-      datasets.push([datasetX, datasetY])
-    }
+    let dataset_changed: boolean;
 
     Object.entries(sign_list).map(([name, elem_info]: ArrDictArrStr) => {
-      if(elem_info[3] === 'true'){
-        const sign_label = name.slice(0, -1) + '- Kick:' + name.slice(-1);
+      if(elem_info[3] === 'true' || name == 'cod_rebuilt'){
+        let sign_label: string = "";
+        if(name!='cod_rebuilt'){
+          sign_label = name.slice(0, -1) + '- Kick:' + name.slice(-1);
+        }else{
+          sign_label = name
+        }
+
+        dataset_changed = props.changeTime;
+        if(elem_info[0] == 'cod_rebuilt'){
+          dataset_changed = dataset_changed || props.changeCodOrbit;
+        }
+
         let datasetX: DatasetInterface|null = control.detectNewData(
-          sign_label, props.changeTime, 'X');
+          sign_label, dataset_changed, 'X');
         let datasetY: DatasetInterface|null = control.detectNewData(
-          sign_label, props.changeTime, 'Y');
-        if(datasetX == null || datasetY == null){
+          sign_label, dataset_changed, 'Y');
+        if(datasetX === null || datasetY === null){
           signatures.push(elem_info);
         }else{
           datasets.push([datasetX, datasetY])
         }
       }
     })
+
     return [datasets, signatures]
   }
 
@@ -122,11 +127,17 @@ const OrbitCharts: React.FC<ChartOrbitInterface> = (props) => {
     let datasetListY: DatasetList = []
 
     const [signatures_created, signatures_to_read] = dictToList(props.sign_list);
+
+    signatures_created.map((dataset: DatasetInterface[]) => {
+      datasetListX.push(dataset[0]);
+      datasetListY.push(dataset[1]);
+    });
+
     if(signatures_to_read.length > 0){
       const dictSign: SignChartData = await fetchSignatureOrbit(
         signatures_to_read, props.start, props.end);
       Object.entries(dictSign).map(([name, sign_orbit]: [string, Array<Array<number>>]) => {
-        if(name!='cod_rebuilt'){
+        if(name!=='cod_rebuilt'){
           name = name.slice(0, -1) + '- Kick:' + name.slice(-1)
         }
         datasetListX = saveDataset(
@@ -135,10 +146,7 @@ const OrbitCharts: React.FC<ChartOrbitInterface> = (props) => {
           name, sign_orbit[1], datasetListY);
       });
     }
-    signatures_created.map((dataset: DatasetInterface[]) => {
-      datasetListX.push(dataset[0]);
-      datasetListY.push(dataset[1]);
-    });
+
     return [datasetListX, datasetListY];
   };
 

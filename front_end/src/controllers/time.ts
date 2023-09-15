@@ -5,7 +5,6 @@ import control from "./Modals";
 import { intervals } from "../assets/constants/date";
 import { ArrDictArrStr } from "../assets/interfaces/types";
 import { DateInfoInterface } from "../assets/interfaces/date";
-import { DictNumber } from "../assets/interfaces/patterns";
 
 
 // Detect if the date is in the past
@@ -32,22 +31,15 @@ function validInterval(start: Date, end: Date): boolean{
 // Get the difference value based on the reference date
 async function getClosestDate(name: string, dataArray: ArchiverDataPoint[], dates: Array<Date>): Promise<number>{
   let closestDate: number = dates[2].getTime();
-  let valueComp: number = 0;
-  if(dates[2] != undefined){
+  if(dates[2] !== undefined){
     if (closestDate >= dates[0].getTime() &&
       closestDate <= dates[1].getTime()){
-        valueComp = getDataInArray(dates[2], dataArray);
+        return getDataInArray(dates[2], dataArray);
     }else{
-      const valueRef: undefined|DictNumber = await getDataInArchiver([name], dates[2]);
-      if(valueRef!=undefined){
-        if(Object.keys(valueRef).length == 1){
-          return valueRef[name]
-        }
-      }
+      return await getDataInArchiver(name, dates[2]);
     }
-    return valueComp;
   }
-  return -1;
+  return 0;
 }
 
 // Get interval name with the milliseconds interval
@@ -55,7 +47,7 @@ function getIntervalFromMilliseconds(milliseconds: number): string{
   let int_name: string = '';
   Object.entries(intervals).map(([name, data]: ArrDictArrStr) => {
     const mil: number = Number(data[0]) * getTimeMilliseconds(data[1])
-    if (mil == milliseconds){
+    if (mil === milliseconds){
       int_name = name;
     }
   })
@@ -100,7 +92,7 @@ function getDate(timeInfo: DateInfoInterface, type: string): Date {
       return timeInfo.end;
     }
     case 'Ref':{
-      if(timeInfo.refDate!=undefined){
+      if(timeInfo.refDate!==undefined){
         return timeInfo.refDate;
       };
       return new Date();
@@ -151,36 +143,27 @@ function setIntervalMode(intervalMode: string): void {
 }
 
 // Get a date from the time interval
-function getNewTimeInterval(time: number, dateRef: Date, intervalMode: string): Date{
+function getNewTimeInterval(timeMil: number, dateRef: Date, intervalMode: string): Date{
   if(intervalMode === 'End'){
-    time = -time;
+    timeMil = -timeMil;
   }
-  return new Date(dateRef.getTime() + time);
-}
-
-// Update the static date(start or end) from the selected time interval
-// and the configurable date(end or start)
-function updateTimeRef(timeMil: number, dateRef: Date, intervalMode: string): Date{
-  let newDate: Date = new Date();
-  newDate = getNewTimeInterval(
-    timeMil, dateRef, intervalMode);
-  return newDate;
+  return new Date(dateRef.getTime() + timeMil);
 }
 
 // Change date with a click
 function changeDateClick(newRefDate: Date, keyPressed: string): void {
   let date_to_change = null
   keyPressed = keyPressed.toLowerCase()
-  if(keyPressed == 'd'){
+  if(keyPressed === 'd'){
     date_to_change = 'Ref'
-  }else if(keyPressed == '1'){
+  }else if(keyPressed === '1'){
     TimeDispatcher.setTimeMode('None')
     date_to_change = 'Start'
-  }else if(keyPressed == '2'){
+  }else if(keyPressed === '2'){
     TimeDispatcher.setTimeMode('None')
     date_to_change = 'End'
   }
-  if(date_to_change!=null){
+  if(date_to_change!==null){
     setDate(date_to_change, newRefDate);
   }
 }
@@ -196,6 +179,5 @@ export {
   changeInterval,
   setIntervalMode,
   getNewTimeInterval,
-  updateTimeRef,
   changeDateClick
 }

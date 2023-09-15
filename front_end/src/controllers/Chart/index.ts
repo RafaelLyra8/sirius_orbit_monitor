@@ -1,4 +1,4 @@
-import { TimeDispatcher } from '../../redux/dispatcher';
+import { TimeDispatcher, BpmDispatcher } from '../../redux/dispatcher';
 import { setAxisColor } from '../chart';
 import { DatasetInterface, DictString } from '../../assets/interfaces/patterns';
 import { DatasetList } from '../../assets/interfaces/types';
@@ -16,7 +16,7 @@ class ChartObject {
 
     // Save chart datasets
     setDataset(newData: DatasetList, axis?: string): void{
-        if (axis == 'A' || axis == 'X'){
+        if (axis === 'A' || axis === 'X'){
             this.dataset = newData;
         }else{
             this.datasetExt = newData;
@@ -30,7 +30,7 @@ class ChartObject {
 
     // Get dataset information by index
     getDatasetByIdx(index: number): any {
-        if (index == 0){
+        if (index === 0){
             return this.dataset;
         }else{
             return this.datasetExt;
@@ -38,25 +38,25 @@ class ChartObject {
     }
 
     // Detect if the data is already on the chart
-    detectNewData(name: string, changeTime: boolean, axis?: string): DatasetInterface|null{
+    detectNewData(name: string, dataset_changed: boolean, axis?: string): DatasetInterface|null{
         let itemInfo: DatasetInterface|null = null;
         let dataset: any = this.dataset;
-        if(axis == 'Y'){
+        if(axis === 'Y'){
             dataset = this.datasetExt;
         }
-        if(!changeTime){
+        if(!dataset_changed){
             dataset.map((item: DatasetInterface) => {
-            if(item.label === name && item.data.length > 0){
-              itemInfo = item;
-            }
-          });
+                if(item.label === name && item.data.length > 0){
+                    itemInfo = item;
+                }
+            });
         }
         return itemInfo;
     }
 
     // Update the chart dataset
     updateDataset(chart: any, newData: DatasetList, options?: any): void {
-        if(options != null){
+        if(options !== null){
             chart.options = options;
         }
         chart.data.datasets = newData;
@@ -71,9 +71,10 @@ class ChartObject {
             state = setAxisColor(state.label, state);
             dataset.push(state);
         });
-        this.updateDataset(chart, dataset, options);
-        TimeDispatcher.setChangeTime(false);
+        await this.updateDataset(chart, dataset, options);
         this.setDataset(dataset, axis);
+        TimeDispatcher.setChangeTime(false);
+        BpmDispatcher.setChangeBpm(false);
         return dataset;
     };
 }

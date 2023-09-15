@@ -18,7 +18,7 @@ const ChartLegend: React.FC<LegendInterface> = (props) => {
 
   // Set visible Option to the Axis element
   function showVisibleOpt(): React.ReactElement | string {
-    if(props.deleteAction !== null){
+    if(props.visibleAction !== null){
       return (
         <Item
           icon='eye'
@@ -46,8 +46,9 @@ const ChartLegend: React.FC<LegendInterface> = (props) => {
 
   return (
     <S.ItemWrapper
-      isVisible={props.isVisible}>
-        <S.Circle color={props.color} />
+      isVisible={props.isVisible}
+      data-testid="legend-item">
+        <S.Circle color={props.color} data-testid="color"/>
         {props.children}
         {showVisibleOpt()}
         {showDeleteOpt()}

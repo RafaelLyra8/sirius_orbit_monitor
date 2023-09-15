@@ -10,21 +10,11 @@ function changeStates(state1: any, state2: any): Array<any>{
 
 // Return the other BPM Axis
 function reverseAxis(axis: string): string {
-    if(axis == 'X'){
+    if(axis === 'X'){
         return 'Y';
     }else{
         return 'X';
     }
-}
-
-// Generate a random id
-function randomIdGen(list: {[key: string]: any}): string {
-    let letters: string = 'AJRTFGSN46283';
-    let randomId: string = '';
-    for (let i = 0; i < 5; i++) {
-        randomId += letters[Math.floor((Math.random() * 13))];
-    }
-    return randomId;
 }
 
 // Sort a string or number list
@@ -48,6 +38,5 @@ function sortList(listToSort: Array<OrbitData>, elem: number): Array<OrbitData>{
 export {
     changeStates,
     reverseAxis,
-    randomIdGen,
     sortList
 }

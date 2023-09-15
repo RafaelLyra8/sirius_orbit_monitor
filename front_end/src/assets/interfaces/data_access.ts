@@ -26,8 +26,6 @@ type DBRType =
 interface ArchiverDataPoint {
   x: Date;
   y: number;
-  // severity: number;
-  // status: number;
 }
 
 interface ArchiverListRaw {
@@ -60,7 +58,7 @@ interface ArchiverData {
 }
 
 interface DataAccess {
-  fetchSeveralPV(pv: Array<string>, date: Date): Promise<DictNumber>;
+  fetchPointPV(pvname: string, date: Date): Promise<ArchiverDataPoint[]>;
   fetchData(pv: string, from: Date, to: Date, optimization: number): Promise<ArchiverData>;
 }
 

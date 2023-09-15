@@ -7,12 +7,12 @@ import ListBPM from "../ListBPM";
 import BaseChart from "../../Patterns/Chart";
 import control from "../../../controllers/Chart";
 import { getArchiver } from "../../../controllers/archiver";
-import { buildDataset } from "../../../controllers/chart";
-import { differentiateData, unsetBPMChange } from "../../../controllers/bpm";
+import { differentiateData } from "../../../controllers/bpm";
+import { unsetOrbitChange } from "../../../controllers/orbit";
 import { changeDateClick } from "../../../controllers/time";
 
 import { optionsDiff } from "./config";
-import { DatasetInterface, DatePointInterface } from "../../../assets/interfaces/patterns";
+import { DatasetInterface} from "../../../assets/interfaces/patterns";
 import { ChartDiffProperties } from "../../../assets/interfaces/bpm";
 import { DatasetList } from "../../../assets/interfaces/types";
 import { ArchiverDataPoint } from "../../../assets/interfaces/data_access";
@@ -64,7 +64,7 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
     if (event.repeat){
       return;
     }
-    if(keyPressed == event.key){
+    if(keyPressed === event.key){
       onKeyPressed('');
     }
   });
@@ -73,7 +73,7 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
   async function handleCanvasClick(evt: React.MouseEvent): Promise<void>{
     if(chartRef.current){
       const chart: null|Chart = chartRef.current.chart;
-      if(chart != null){
+      if(chart !== null){
         const chartParameters: ChartArea = chart.chartArea;
         const chartRange: any = chart.scales.x.getMinMax(false);
         const chartTimeUnit: number = (chartRange.max - chartRange.min)/chartParameters.width;
@@ -86,8 +86,10 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
 
   // Detect change on time or selected BPMs
   useEffect(() => {
+    unsetOrbitChange();
     if(props.changeBpm || props.changeTime || optimizeFlag){
       updateChartDiff();
+      setOptimizeFlag(false);
     }
   }, [props.changeBpm, props.changeTime, optimizeFlag])
 
@@ -95,12 +97,11 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
   async function updateChartDiff() {
     if(chartRef.current){
       const chart: null|Chart = chartRef.current.chart;
-      if(chart != null){
+      if(chart !== null){
         const datasetList: DatasetList = await buildChartDiff();
         control.setLabels([]);
         await control.buildChartDatasets(
           chart, datasetList, optionsDiff, 'A');
-        unsetBPMChange();
       }
     }
   }
@@ -113,13 +114,12 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
         if(state[0] && state[1]){
           let datasetCreated: DatasetInterface|null = control.detectNewData(
             name, props.changeTime, 'A');
-          if(datasetCreated == null || !(props.changeBpm || props.changeTime)){
+          if(datasetCreated === null || !(props.changeBpm || props.changeTime)){
             const archiverResult: ArchiverDataPoint[]|undefined = await getArchiver(
               name, props.start, props.end, optimization);
-            if(archiverResult != undefined){
-              const rawDataset: Array<ArchiverDataPoint> = await buildDataset(archiverResult);
-              const finalDataset: Array<DatePointInterface> = await differentiateData(
-                rawDataset, name, [props.start, props.end, props.refDate]);
+            if(archiverResult !== undefined){
+              const finalDataset: Array<ArchiverDataPoint> = await differentiateData(
+                archiverResult, name, [props.start, props.end, props.refDate]);
               const datasetTemp: DatasetInterface = {
                 data: finalDataset,
                 xAxisID: 'x',
@@ -146,8 +146,8 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
         ref={chartRef}
         />
       <ListBPM />
-      <S.TextWrapper>
-        Optimization: <input
+      {/* <S.TextWrapper>
+        Number of Points: <input
           type='number'
           value={optimization}
           onChange={
@@ -155,13 +155,14 @@ const DiffChart: React.FC<ChartDiffProperties> = (props) => {
               setOptimize(parseInt(event.target.value))}
           onKeyDown={
             (event)=>{
-              if(event.key == 'Enter'){
-                setOptimizeFlag(!optimizeFlag);
+              if(event.key === 'Enter'){
+                setBPMChange();
+                setOptimizeFlag(true);
               }
             }
           }
           max={1500}/>
-      </S.TextWrapper>
+      </S.TextWrapper> */}
     </S.ChartWrapper>
   );
 };

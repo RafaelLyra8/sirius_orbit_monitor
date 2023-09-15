@@ -1,6 +1,7 @@
 import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { BpmPointInterface, ChangeBpmInterface } from "./bpm";
+import { ArchiverDataPoint } from "./data_access";
 import { ChangeOrbitInterface } from "./orbit";
 import { DispatchBool } from "./types";
 
@@ -46,13 +47,8 @@ interface ModalInterface {
     close: () => void;
 }
 
-interface DatePointInterface {
-    x: Date;
-    y: number;
-}
-
 interface DatasetInterface {
-    data: Array<DatePointInterface|BpmPointInterface>;
+    data: Array<ArchiverDataPoint|BpmPointInterface>;
     xAxisID: string;
     label: string;
     borderColor?: string;
@@ -89,7 +85,7 @@ interface LegendInterface extends ChildrenInterface {
     color: string;
     isVisible: boolean;
     deleteAction: null | (() => void);
-    visibleAction: () => void;
+    visibleAction: null | (() => void);
 }
 
 interface ChangeInterface
@@ -125,7 +121,6 @@ export type {
     IconStyle,
     ActionItem,
     ModalInterface,
-    DatePointInterface,
     BaseChartInterface,
     DatasetInterface,
     HeaderInterface,

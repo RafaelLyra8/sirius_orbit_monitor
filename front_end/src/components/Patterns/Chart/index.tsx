@@ -39,7 +39,7 @@ class BaseChart extends Component<any>{
 
   // Create and configure chart component
   componentDidMount(): void {
-    if(this.chartRef.current != null){
+    if(this.chartRef.current !== null){
       this.chart = this.createChart(
         this.chartRef.current)
     }else{
@@ -53,7 +53,7 @@ class BaseChart extends Component<any>{
 
   render() {
     return (
-      <S.ChartWrapper>
+      <S.ChartWrapper data-testid="chart">
         <S.Chart
           id={"canvas"+this.id}
           ref={this.chartRef}/>
